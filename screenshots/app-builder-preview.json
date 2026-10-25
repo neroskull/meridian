@@ -1,0 +1,41 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Meridian",
+      "hasCanvas": false,
+      "bodyTextLen": 379,
+      "bodyTextHash": "a136cbfa92ca732bf1aa08da067a85e8b6702563bc0b0f4defd491d79434c69a",
+      "bodyTextPrefix": "Meridian Atlas vivant Fluidité estimée Animé Week-end, circulati",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Meridian",
+      "hasCanvas": false,
+      "bodyTextLen": 379,
+      "bodyTextHash": "a136cbfa92ca732bf1aa08da067a85e8b6702563bc0b0f4defd491d79434c69a",
+      "bodyTextPrefix": "Meridian Atlas vivant Fluidité estimée Animé Week-end, circulati",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json",
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "mobile: canvas disappeared",
+    "mobile: body text changed (430 -> 379 chars, hash mismatch)"
+  ]
+}

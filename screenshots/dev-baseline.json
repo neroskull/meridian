@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Meridian",
+      "hasCanvas": false,
+      "bodyTextLen": 379,
+      "bodyTextHash": "a136cbfa92ca732bf1aa08da067a85e8b6702563bc0b0f4defd491d79434c69a",
+      "bodyTextPrefix": "Meridian Atlas vivant Fluidité estimée Animé Week-end, circulati",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Meridian",
+      "hasCanvas": true,
+      "bodyTextLen": 430,
+      "bodyTextHash": "4299484699d178079e9630b9fa6d74a54ff440c31654ef2a6a1bb166800e0042",
+      "bodyTextPrefix": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap Meridian Atla",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

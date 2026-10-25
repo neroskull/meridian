@@ -1,0 +1,235 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --color-bg: #0e1114;
+  --color-surface: #171b20;
+  --color-fg: #f2f4f6;
+  --color-muted: #a3acb5;
+  --color-subtle: #7c868f;
+  --color-line: #2c343d;
+  --color-accent: #d7e2ea;
+  --color-accent-fg: #12171c;
+  --color-ink: #8eb4c4;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+  input[type="time"] {
+    color-scheme: dark;
+  }
+}
+
+#meridian-map {
+  background: #c5cdc6;
+}
+
+.shadow-panel {
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.28);
+}
+
+.scroll-x,
+.scroll-y {
+  scrollbar-width: none;
+}
+.scroll-x::-webkit-scrollbar,
+.scroll-y::-webkit-scrollbar {
+  display: none;
+}
+
+.phone-stage {
+  display: grid;
+  height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  background: #07090b;
+}
+.phone {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+.phone-screen {
+  position: absolute;
+  inset: 0;
+}
+.phone-island,
+.phone-home {
+  display: none;
+}
+.dock {
+  right: 0.75rem;
+  bottom: max(0.85rem, env(safe-area-inset-bottom));
+  left: 0.75rem;
+}
+
+.sheet-home {
+  max-height: 48%;
+}
+.sheet-open {
+  max-height: 72%;
+}
+
+.map-tools {
+  top: max(2.6rem, calc(env(safe-area-inset-top) + 0.5rem));
+  right: 0.75rem;
+}
+
+.guide-card {
+  top: max(2.6rem, calc(env(safe-area-inset-top) + 0.5rem));
+  left: 0.75rem;
+  width: min(16.5rem, calc(100% - 5.25rem));
+}
+
+.measure-card {
+  top: max(2.6rem, calc(env(safe-area-inset-top) + 0.5rem));
+  left: 0.75rem;
+  max-width: min(16rem, calc(100% - 5.25rem));
+}
+
+.icon-btn {
+  transition:
+    transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 150ms linear;
+}
+.icon-btn:active {
+  transform: scale(0.98);
+}
+
+.swatch-jour {
+  background: #c5d0c4;
+}
+.swatch-clair {
+  background: #e4e0d6;
+}
+.swatch-encre {
+  background: #e7e4de;
+}
+.swatch-nuit {
+  background: #1c2128;
+}
+
+.pin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #0e1114;
+  border-radius: 999px;
+  background: #f2f4f6;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.28);
+}
+.pin-dest {
+  border-radius: 50% 50% 50% 0;
+  background: #172028;
+  border-color: #f2f4f6;
+  transform: rotate(-45deg);
+}
+.pin-user {
+  background: #8eb4c4;
+  box-shadow: 0 0 0 7px rgb(142 180 196 / 0.35);
+}
+.pin-stop {
+  width: 10px;
+  height: 10px;
+  background: #d7e2ea;
+}
+.pin-selected {
+  background: transparent;
+  border-color: #172028;
+  box-shadow: 0 0 0 4px rgb(242 244 246 / 0.85);
+}
+.pin-origin {
+  border-radius: 3px;
+}
+.pin-guide {
+  width: 16px;
+  height: 16px;
+  background: #8eb4c4;
+  border-color: #f2f4f6;
+  box-shadow: 0 0 0 6px rgb(142 180 196 / 0.35);
+}
+
+.maplibregl-ctrl-attrib {
+  background: color-mix(in oklab, var(--color-bg) 84%, transparent) !important;
+  color: var(--color-muted) !important;
+  font-size: 10px !important;
+  border-radius: 8px !important;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--color-fg) !important;
+}
+.maplibregl-ctrl-top-left {
+  top: 0.45rem !important;
+  left: 0.45rem !important;
+}
+.maplibregl-canvas {
+  outline: none;
+}
+
+@media (min-width: 520px) {
+  .phone {
+    width: min(390px, calc(100vw - 2.5rem));
+    height: min(844px, calc(100dvh - 2.5rem));
+    border: 10px solid #1a1e24;
+    border-radius: 2.6rem;
+    box-shadow:
+      0 0 0 1px #2c343d,
+      0 28px 70px rgb(0 0 0 / 0.55);
+  }
+  .phone-island {
+    display: block;
+    position: absolute;
+    z-index: 40;
+    top: 0.55rem;
+    left: 50%;
+    width: 6.4rem;
+    height: 1.3rem;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: #07090b;
+    pointer-events: none;
+  }
+  .phone-home {
+    display: block;
+    position: absolute;
+    z-index: 40;
+    bottom: 0.4rem;
+    left: 50%;
+    width: 6.5rem;
+    height: 0.28rem;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-fg) 50%, transparent);
+    pointer-events: none;
+  }
+  .dock {
+    bottom: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn,
+  .dock {
+    transition: none;
+  }
+}

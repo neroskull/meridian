@@ -1,11 +1,14 @@
+import { speakDirection } from "./voice";
 import { loadBasin, planRoute, reversePlace, searchNearby, searchPlaces } from "./geo";
-import { boundsOf, haversine, samePlace, type Place, type RouteStep, type TravelMode } from "./model";
+import { boundsOf, formatDistance, haversine, samePlace, type Place, type RouteStep, type TravelMode } from "./model";
 import { useMeridian } from "./store";
 
 let searchToken = 0;
 let routeToken = 0;
 let basinToken = 0;
 let noticeTimer = 0;
+let voiceToken = 0;
+let player: HTMLAudioElement | null = null;
 
 function pushRecent(place: Place) {
   const recents = [place, ...useMeridian.getState().recents.filter((item) => item.id !== place.id)].slice(0, 8);
@@ -35,6 +38,72 @@ function focusStep(step: RouteStep | undefined) {
   flyTo({ lng: step.lng, lat: step.lat }, 16.6);
 }
 
+function spokenCue(step: RouteStep) {
+  const line = step.instruction.replace(/\s+/g, " ").trim();
+  if (step.distance > 30) return `${line}. Encore ${formatDistance(step.distance)}.`;
+  return line;
+}
+
+function speakLocal(text: string) {
+  if (typeof window === "undefined" || !window.speechSynthesis) {
+    useMeridian.setState({ voiceStatus: "idle" });
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "fr-FR";
+  utterance.rate = 1;
+  utterance.onend = () => {
+    if (useMeridian.getState().voiceStatus === "speaking") useMeridian.setState({ voiceStatus: "idle" });
+  };
+  useMeridian.setState({ voiceStatus: "speaking" });
+  window.speechSynthesis.speak(utterance);
+}
+
+export function stopVoice() {
+  voiceToken += 1;
+  player?.pause();
+  player = null;
+  if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+  if (useMeridian.getState().voiceStatus !== "idle") useMeridian.setState({ voiceStatus: "idle" });
+}
+
+export async function announceCurrent() {
+  const state = useMeridian.getState();
+  if (!state.voiceOn || !state.guideOn) return;
+  const step = activeRoute()?.steps[state.guideIndex];
+  if (!step) return;
+  const text = spokenCue(step);
+  const token = ++voiceToken;
+  speakLocal(text);
+  try {
+    const result = await speakDirection({ data: { text } });
+    if (token !== voiceToken || !useMeridian.getState().voiceOn || !result.ok) return;
+    window.speechSynthesis?.cancel();
+    player?.pause();
+    const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
+    player = audio;
+    audio.onended = () => {
+      if (player === audio) useMeridian.setState({ voiceStatus: "idle" });
+    };
+    try {
+      await audio.play();
+      if (token === voiceToken) useMeridian.setState({ voiceStatus: "speaking" });
+    } catch {
+      if (token === voiceToken) speakLocal(text);
+    }
+  } catch {
+    /* the phone voice is already saying the turn */
+  }
+}
+
+export function toggleVoice() {
+  const next = !useMeridian.getState().voiceOn;
+  useMeridian.setState({ voiceOn: next });
+  if (!next) stopVoice();
+  else void announceCurrent();
+}
+
 export function openGuide() {
   const route = activeRoute();
   if (!route?.steps.length) {
@@ -43,6 +112,7 @@ export function openGuide() {
   }
   useMeridian.setState({ guideOn: true, guideIndex: 0, stepsOpen: true });
   focusStep(route.steps[0]);
+  void announceCurrent();
 }
 
 export function moveGuide(direction: -1 | 1) {
@@ -51,6 +121,7 @@ export function moveGuide(direction: -1 | 1) {
   const index = Math.min(route.steps.length - 1, Math.max(0, useMeridian.getState().guideIndex + direction));
   useMeridian.setState({ guideOn: true, guideIndex: index });
   focusStep(route.steps[index]);
+  void announceCurrent();
 }
 
 export function showGuideStep(index: number) {
@@ -59,9 +130,11 @@ export function showGuideStep(index: number) {
   const next = Math.min(route.steps.length - 1, Math.max(0, index));
   useMeridian.setState({ guideOn: true, guideIndex: next, stepsOpen: true });
   focusStep(route.steps[next]);
+  void announceCurrent();
 }
 
 export function stopGuide() {
+  stopVoice();
   useMeridian.setState({ guideOn: false });
 }
 
@@ -423,35 +496,91 @@ export function setIsochroneMin(minutes: 10 | 15 | 30) {
   void refreshBasin();
 }
 
-export function locate() {
-  if (!navigator.geolocation) {
-    notify("La géolocalisation n'est pas disponible ici.");
+let watchId: number | null = null;
+
+export function askGps() {
+  const state = useMeridian.getState();
+  if (state.gps === "live") {
+    if (!state.gpsFollow) {
+      useMeridian.setState({ gpsFollow: true });
+      return;
+    }
+    stopGps();
     return;
   }
-  navigator.geolocation.getCurrentPosition(
+  useMeridian.setState({ gps: "ask" });
+}
+
+export function cancelGpsAsk() {
+  if (useMeridian.getState().gps === "ask") useMeridian.setState({ gps: "off" });
+}
+
+export function allowGps() {
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    useMeridian.setState({ gps: "denied" });
+    notify("Ce navigateur ne propose pas la localisation.");
+    return;
+  }
+  if (watchId != null) navigator.geolocation.clearWatch(watchId);
+  watchId = navigator.geolocation.watchPosition(
     (pos) => {
       const lng = pos.coords.longitude;
       const lat = pos.coords.latitude;
+      const accuracy = Number.isFinite(pos.coords.accuracy) ? Math.round(pos.coords.accuracy) : null;
+      const heading =
+        pos.coords.heading != null && Number.isFinite(pos.coords.heading) ? pos.coords.heading : null;
+      const state = useMeridian.getState();
+      const first = state.gps !== "live";
       const place: Place = {
         id: "user",
         name: "Ma position",
-        subtitle: "Position actuelle",
+        subtitle: accuracy != null ? `GPS · ±${accuracy} m` : "GPS",
         lng,
         lat,
       };
       useMeridian.setState({
-        user: { lng, lat },
-        origin: place,
-        viewport: { lng, lat, zoom: 15 },
-        camera: { kind: "fly", lng, lat, zoom: 15, nonce: Date.now() },
+        gps: "live",
+        gpsFollow: first ? true : state.gpsFollow,
+        user: { lng, lat, accuracy, heading },
+        ...(first
+          ? {
+              origin: place,
+              camera: { kind: "fly" as const, lng, lat, zoom: 16, nonce: Date.now() },
+            }
+          : {}),
       });
-      if (useMeridian.getState().destination) void plan();
-      if (useMeridian.getState().isochroneOn) void refreshBasin();
-      notify("Position utilisée comme départ.");
+      if (first && useMeridian.getState().destination) void plan();
+      if (first && useMeridian.getState().isochroneOn) void refreshBasin();
     },
-    () => notify("Localisation refusée. L'atlas reste sur le cadrage actuel."),
-    { enableHighAccuracy: true, timeout: 8000, maximumAge: 20000 },
+    (err) => {
+      if (err.code === err.PERMISSION_DENIED) {
+        if (watchId != null) navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+        useMeridian.setState({ gps: "denied", gpsFollow: false });
+        notify("Autorisation refusée. Activez la position dans le navigateur, puis réessayez.");
+        return;
+      }
+      notify("Signal GPS introuvable. Réessayez près d'une fenêtre ou dehors.");
+    },
+    { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 },
   );
+}
+
+export function stopGps() {
+  if (watchId != null && typeof navigator !== "undefined" && navigator.geolocation) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+  watchId = null;
+  useMeridian.setState({ gps: "off", gpsFollow: false });
+  notify("Mode GPS arrêté.");
+}
+
+export function pauseGpsFollow() {
+  if (useMeridian.getState().gpsFollow) useMeridian.setState({ gpsFollow: false });
+}
+
+export function locate() {
+  askGps();
 }
 
 export function useMapCenterAsOrigin() {

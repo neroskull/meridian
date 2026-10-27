@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, Map as MlMap, Marker as MlMarker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
-import { selectOnMap, choosePlace } from "@/lib/maps/actions";
+import { selectOnMap, choosePlace, pauseGpsFollow } from "@/lib/maps/actions";
 import { atlasUrl, lineColors, PARIS_ORIGIN } from "@/lib/maps/model";
 import { useMeridian } from "@/lib/maps/store";
 
@@ -47,7 +47,7 @@ export function MapView() {
       s.destination?.id ?? "",
       s.stops.map((stop) => stop.id).join(","),
       s.selected?.id ?? "",
-      s.user ? "u" : "",
+      s.user ? `${s.user.lng.toFixed(5)},${s.user.lat.toFixed(5)}` : "",
       s.measuring ? "m" : "",
       s.measure.map((p) => p.join(":")).join("|"),
       s.pois.map((p) => p.id).join(","),
@@ -102,6 +102,7 @@ export function MapView() {
       live.on("error", () => {
         /* tile errors stay inside the map; chrome remains usable */
       });
+      live.on("dragstart", () => pauseGpsFollow());
       live.on("rotate", () => useMeridian.setState({ bearing: live.getBearing() }));
       live.on("moveend", () => {
         const center = live.getCenter();
@@ -187,6 +188,22 @@ export function MapView() {
     }
     map.fitBounds(camera.bounds, { padding: pad(), duration: 800, maxZoom: 16 });
   }, [camera, ready]);
+
+  const gpsFollow = useMeridian((s) => s.gpsFollow);
+  const userLng = useMeridian((s) => s.user?.lng ?? null);
+  const userLat = useMeridian((s) => s.user?.lat ?? null);
+  const userHeading = useMeridian((s) => s.user?.heading ?? null);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !gpsFollow || userLng == null || userLat == null) return;
+    map.easeTo({
+      center: [userLng, userLat],
+      bearing: userHeading ?? map.getBearing(),
+      duration: 650,
+      essential: true,
+    });
+  }, [gpsFollow, userLng, userLat, userHeading, ready]);
 
   useEffect(() => {
     const map = mapRef.current;

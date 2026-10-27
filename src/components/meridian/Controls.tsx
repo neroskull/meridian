@@ -1,6 +1,6 @@
-import { ChevronLeft, ChevronRight, Compass, Layers, LocateFixed, Ruler, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Compass, Layers, LocateFixed, Ruler, Volume2, VolumeX, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { clearMeasure, locate, moveGuide, stopGuide, undoMeasure } from "@/lib/maps/actions";
+import { allowGps, announceCurrent, cancelGpsAsk, clearMeasure, locate, moveGuide, stopGuide, toggleVoice, undoMeasure } from "@/lib/maps/actions";
 import { formatDistance, formatDuration, pace, pathLength } from "@/lib/maps/model";
 import { useMeridian } from "@/lib/maps/store";
 import { cx } from "@/lib/cx";
@@ -18,12 +18,20 @@ export function Controls() {
   const routeIndex = useMeridian((s) => s.routeIndex);
   const route = (routesByMode[mode] ?? [])[routeIndex] ?? (routesByMode[mode] ?? [])[0];
   const step = guideOn ? route?.steps[guideIndex] : undefined;
+  const gps = useMeridian((s) => s.gps);
+  const gpsFollow = useMeridian((s) => s.gpsFollow);
+  const accuracy = useMeridian((s) => s.user?.accuracy ?? null);
+  const voiceOn = useMeridian((s) => s.voiceOn);
+  const voiceStatus = useMeridian((s) => s.voiceStatus);
 
   return (
     <>
       <div className="map-tools absolute z-20 flex flex-col gap-2">
-        <IconButton label="Ma position" onClick={locate}>
+        <IconButton label={gps === "live" ? "Mode GPS" : "Activer le GPS"} pressed={gps === "live" && gpsFollow} onClick={locate}>
           <LocateFixed className="size-5" strokeWidth={1.75} />
+        </IconButton>
+        <IconButton label={voiceOn ? "Couper la voix" : "Activer la voix"} pressed={voiceOn} onClick={toggleVoice}>
+          {voiceOn ? <Volume2 className="size-5" strokeWidth={1.75} /> : <VolumeX className="size-5" strokeWidth={1.75} />}
         </IconButton>
         <IconButton
           label="Recaler au nord"
@@ -47,6 +55,35 @@ export function Controls() {
         </IconButton>
       </div>
 
+      {(gps === "ask" || gps === "denied") && (
+        <div className="gps-card shadow-panel absolute z-30 rounded-2xl border border-line bg-surface px-4 py-3" role="dialog" aria-labelledby="gps-title">
+          <p id="gps-title" className="text-sm font-medium text-fg">
+            Autoriser la position
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Le mode GPS centre la carte sur vous et vous suit. Le navigateur affichera sa propre demande d'autorisation.
+          </p>
+          {gps === "denied" && (
+            <p className="mt-2 text-xs text-fg">Accès refusé. Autorisez la localisation pour ce site dans le navigateur, puis réessayez.</p>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={allowGps} className="h-10 flex-1 rounded-lg bg-accent text-sm font-medium text-accent-fg">
+              Autoriser
+            </button>
+            <button type="button" onClick={cancelGpsAsk} className="h-10 flex-1 rounded-lg border border-line text-sm text-fg">
+              Plus tard
+            </button>
+          </div>
+        </div>
+      )}
+
+      {gps === "live" && (
+        <p className="gps-live absolute z-30 rounded-full border border-line bg-surface px-3 py-1 text-xs text-fg tabular-nums">
+          {gpsFollow ? "GPS" : "GPS en pause"}
+          {accuracy != null ? ` · ±${accuracy} m` : ""}
+        </p>
+      )}
+
       {step && (
         <div className="guide-card shadow-panel absolute z-30 rounded-2xl border border-line bg-surface px-3 py-3">
           <div className="flex items-start justify-between gap-2">
@@ -59,6 +96,9 @@ export function Controls() {
           </div>
           <p className="mt-1 text-sm text-fg">{step.instruction}</p>
           <p className="mt-1 text-xs text-muted tabular-nums">{formatDistance(step.distance)}</p>
+          <button type="button" onClick={() => void announceCurrent()} className="mt-2 text-xs font-medium text-ink">
+            {voiceStatus === "loading" ? "La voix se prépare…" : voiceStatus === "speaking" ? "La voix parle" : "Réécouter la direction"}
+          </button>
           <div className="mt-2 flex gap-2">
             <button type="button" onClick={() => moveGuide(-1)} className="inline-flex h-10 flex-1 items-center justify-center gap-1 rounded-lg border border-line text-sm text-fg">
               <ChevronLeft className="size-4" />

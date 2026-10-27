@@ -39,7 +39,14 @@
 }
 
 #meridian-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   background: #c5cdc6;
+}
+#meridian-map.maplibregl-map {
+  position: absolute;
 }
 
 .shadow-panel {
@@ -100,6 +107,16 @@
   top: max(2.6rem, calc(env(safe-area-inset-top) + 0.5rem));
   left: 0.75rem;
   width: min(16.5rem, calc(100% - 5.25rem));
+}
+
+.gps-card {
+  top: 4.75rem;
+  left: 0.75rem;
+  width: min(18rem, calc(100% - 5.25rem));
+}
+.gps-live {
+  top: max(0.55rem, env(safe-area-inset-top));
+  left: 0.75rem;
 }
 
 .measure-card {

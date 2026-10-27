@@ -49,7 +49,9 @@ export type MeridianState = {
   isochroneReal: boolean;
   isochroneStatus: Status;
   viewport: { lng: number; lat: number; zoom: number };
-  user: { lng: number; lat: number } | null;
+  user: { lng: number; lat: number; accuracy: number | null; heading: number | null } | null;
+  gps: "off" | "ask" | "live" | "denied";
+  gpsFollow: boolean;
   camera: Camera | null;
   focusNonce: number;
   northNonce: number;
@@ -57,6 +59,8 @@ export type MeridianState = {
   stepsOpen: boolean;
   guideOn: boolean;
   guideIndex: number;
+  voiceOn: boolean;
+  voiceStatus: "idle" | "loading" | "speaking";
   activeCategory: string | null;
 };
 
@@ -134,6 +138,8 @@ export const useMeridian = create<MeridianState>(() => ({
   isochroneStatus: "idle",
   viewport: { lng: PARIS_ORIGIN.lng, lat: PARIS_ORIGIN.lat, zoom: 13 },
   user: null,
+  gps: "off",
+  gpsFollow: false,
   camera: null,
   focusNonce: 0,
   northNonce: 0,
@@ -141,6 +147,8 @@ export const useMeridian = create<MeridianState>(() => ({
   stepsOpen: false,
   guideOn: false,
   guideIndex: 0,
+  voiceOn: true,
+  voiceStatus: "idle",
   activeCategory: null,
 }));
 

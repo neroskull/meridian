@@ -11,6 +11,9 @@ type Data = Parameters<GeoJSONSource["setData"]>[0];
 const EMPTY: Data = { type: "FeatureCollection", features: [] };
 
 function pad() {
+  if (typeof window !== "undefined" && window.matchMedia("(min-width: 960px)").matches) {
+    return { top: 72, bottom: 48, left: 420, right: 72 };
+  }
   return { top: 72, bottom: 280, left: 20, right: 64 };
 }
 

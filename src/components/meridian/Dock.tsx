@@ -123,7 +123,7 @@ export function Dock() {
         panel === "home" ? "sheet-home" : "sheet-open",
       )}
     >
-      <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-line" aria-hidden />
+      <div className="dock-grab mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-line" aria-hidden />
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
         <Mark />
         <div className="min-w-0">

@@ -62,28 +62,12 @@
   display: none;
 }
 
-.phone-stage {
-  display: grid;
-  height: 100dvh;
-  place-items: center;
-  overflow: hidden;
-  background: #07090b;
-}
-.phone {
+.site {
   position: relative;
-  width: 100%;
-  height: 100%;
+  height: 100dvh;
   overflow: hidden;
   background: var(--color-bg);
   color: var(--color-fg);
-}
-.phone-screen {
-  position: absolute;
-  inset: 0;
-}
-.phone-island,
-.phone-home {
-  display: none;
 }
 .dock {
   right: 0.75rem;
@@ -203,44 +187,37 @@
   outline: none;
 }
 
-@media (min-width: 520px) {
-  .phone {
-    width: min(390px, calc(100vw - 2.5rem));
-    height: min(844px, calc(100dvh - 2.5rem));
-    border: 10px solid #1a1e24;
-    border-radius: 2.6rem;
-    box-shadow:
-      0 0 0 1px #2c343d,
-      0 28px 70px rgb(0 0 0 / 0.55);
-  }
-  .phone-island {
-    display: block;
-    position: absolute;
-    z-index: 40;
-    top: 0.55rem;
-    left: 50%;
-    width: 6.4rem;
-    height: 1.3rem;
-    transform: translateX(-50%);
-    border-radius: 999px;
-    background: #07090b;
-    pointer-events: none;
-  }
-  .phone-home {
-    display: block;
-    position: absolute;
-    z-index: 40;
-    bottom: 0.4rem;
-    left: 50%;
-    width: 6.5rem;
-    height: 0.28rem;
-    transform: translateX(-50%);
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--color-fg) 50%, transparent);
-    pointer-events: none;
-  }
+@media (min-width: 960px) {
   .dock {
-    bottom: 1.15rem;
+    top: 0;
+    right: auto;
+    bottom: 0;
+    left: 0;
+    width: 380px;
+    max-height: none;
+    border-radius: 0;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
+  }
+  .sheet-home,
+  .sheet-open {
+    max-height: none;
+  }
+  .dock-grab {
+    display: none;
+  }
+  .map-tools {
+    right: 1.25rem;
+  }
+  .guide-card,
+  .gps-card,
+  .gps-live,
+  .measure-card {
+    left: 404px;
+  }
+  .maplibregl-ctrl-top-left {
+    left: 396px !important;
   }
 }
 

@@ -12,16 +12,10 @@ export function MeridianApp() {
   }, []);
 
   return (
-    <div className="phone-stage">
-      <main className="phone">
-        <div className="phone-screen">
-          <MapView />
-          <Controls />
-          <Dock />
-        </div>
-        <div className="phone-island" aria-hidden />
-        <div className="phone-home" aria-hidden />
-      </main>
-    </div>
+    <main className="site">
+      <MapView />
+      <Controls />
+      <Dock />
+    </main>
   );
 }

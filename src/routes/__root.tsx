@@ -11,7 +11,7 @@ export const Route = createRootRoute({
       { title: "Meridian" },
       {
         name: "description",
-        content: "Meridian — carte, itinéraires comparés, bassins de temps et lumière du lieu.",
+        content: "Meridian — carte, itinéraires, guidage vocal et position.",
       },
       { name: "theme-color", content: "#0e1114" },
     ],
